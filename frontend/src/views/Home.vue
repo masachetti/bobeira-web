@@ -1,8 +1,19 @@
 <script setup lang="ts">
+  import { onMounted } from "vue";
   import Button from "@components/ui/Button.vue";
   import { useAppStore } from "@stores/app-store";
+  import { getPrivateData } from "@/services/api";
 
   const { goTo } = useAppStore();
+
+  onMounted(async () => {
+    try {
+      const data = await getPrivateData();
+      console.log("Backend protected endpoint response:", data);
+    } catch (error) {
+      console.error("Failed to fetch protected data:", error);
+    }
+  });
 </script>
 <template>
   <div class="flex flex-col gap-3 justify-center w-fit h-full">
