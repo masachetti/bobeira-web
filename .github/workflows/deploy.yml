@@ -83,7 +83,7 @@ jobs:
       
       - name: Deploy frontend
         run: |
-          rsync -avz --delete frontend-dist/ ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:~/hub/projects/my-project/frontend/dist/
+          rsync -avz --delete frontend-dist/ ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:~/hub/projects/bobeira/frontend/dist/
       
       # - name: Deploy backend
       #   run: |
