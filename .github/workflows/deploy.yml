@@ -2,7 +2,7 @@ name: Deploy to Production
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -10,56 +10,56 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
-      
+
       - name: Install dependencies
         working-directory: ./frontend
         run: npm ci
-      
+
       - name: Build
         working-directory: ./frontend
         run: npm run build
-      
+
       - name: Upload frontend artifact
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
           path: frontend/dist
 
-  # build-backend:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-      
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '20'
-  #         cache: 'npm'
-  #         cache-dependency-path: backend/package-lock.json
-      
-  #     - name: Install dependencies
-  #       working-directory: ./backend
-  #       run: npm ci
-      
-  #     - name: Upload backend artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: backend-code
-  #         path: |
-  #           backend/
-  #           !backend/node_modules
-  #           !backend/data
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Upload backend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-code
+          path: |
+            backend/
+            !backend/node_modules
+            !backend/data
 
   deploy:
-    # needs: [build-frontend, build-backend]
-    needs: [build-frontend]
+    needs: [build-frontend, build-backend]
+    # needs: [build-frontend]
     runs-on: ubuntu-latest
     steps:
       - name: Download frontend artifact
@@ -67,31 +67,31 @@ jobs:
         with:
           name: frontend-dist
           path: frontend-dist
-      
-      # - name: Download backend artifact
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: backend-code
-      #     path: backend
-      
+
+      - name: Download backend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-code
+          path: backend
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
-      
+
       - name: Deploy frontend
         run: |
           rsync -avz --delete frontend-dist/ ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:~/hub/projects/bobeira/frontend/dist/
-      
-      # - name: Deploy backend
-      #   run: |
-      #     rsync -avz --delete --exclude 'data' backend/ ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:~/hub/projects/my-project/backend/
-      
+
+      - name: Deploy backend
+        run: |
+          rsync -avz --delete --exclude 'data' backend/ ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:~/hub/projects/bobeira/backend/
+
       - name: Restart services
         run: |
           ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} << 'EOF'
             cd ~/hub
-            docker compose restart nginx
+            ./scripts/start-all.sh
           EOF
