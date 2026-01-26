@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-RUN npm config set fetch-timeout 60000 && \
+RUN npm config set fetch-timeout 1200 && \
     npm config set registry https://registry.npmjs.org/ && \
     npm ci
 
@@ -24,7 +24,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-RUN npm config set fetch-timeout 60000 && \
+RUN npm config set fetch-timeout 1200 && \
     npm config set registry https://registry.npmjs.org/ && \
     npm ci --omit=dev && \
     npx prisma generate
