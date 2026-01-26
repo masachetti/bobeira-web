@@ -51,9 +51,10 @@
           <Button
             class="bg-red-500 py-1.5 hover:bg-red-700 flex relative pl-9"
             @click="
-              () => {
-                deleteCard(cardId);
+              async () => {
+                await deleteCard(cardId);
                 closeModal();
+                emit('close');
               }
             "
           >

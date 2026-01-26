@@ -4,15 +4,15 @@ import { PrismaClient } from "./generated/prisma/client.js";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { createClient } from "@libsql/client";
 import { keycloak, sessionMiddleware } from "./config/keycloak.js";
+import { createCardRoutes } from "./routes/card-routes.js";
 
 const app = express();
 
 // Setup Prisma with libSQL adapter for SQLite
-const libsql = createClient({
-  url: "file:./prisma/dev.db",
-});
+const dbUrl = process.env.DATABASE_URL || "file:./dev.db";
+
 // @ts-ignore
-const adapter = new PrismaLibSql(libsql);
+const adapter = new PrismaLibSql({ url: dbUrl });
 const prisma = new PrismaClient({ adapter });
 const PORT = process.env.PORT || 3000;
 
@@ -67,6 +67,9 @@ app.get("/api/private", keycloak.protect(), (req: Request, res: Response) => {
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok" });
 });
+
+// Card routes
+app.use("/api/cards", createCardRoutes(prisma, keycloak));
 
 // Start server
 app.listen(PORT, () => {

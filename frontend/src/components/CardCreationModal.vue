@@ -3,12 +3,11 @@
   import EditableCard from "@/components/ui/EditableCard.vue";
   import Modal from "@/components/ui/Modal.vue";
   import { useDeckStore } from "@/stores/deck-store";
-  import { useAppStore } from "@stores/app-store";
-  import { reactive, ref } from "vue";
+  import { useUserStore } from "@/stores/user-store";
+  import { reactive } from "vue";
 
-  const { appStore } = useAppStore();
+  const { username } = useUserStore();
   const { addCard } = useDeckStore();
-  const username = ref(appStore.username);
 
   const initialCardState = {
     score: 1,
@@ -21,8 +20,8 @@
     card.score = initialCardState.score;
     card.title = initialCardState.title;
   };
-  const createCard = (closeModal: () => void) => {
-    addCard({
+  const createCard = async (closeModal: () => void) => {
+    await addCard({
       description: card.description,
       score: card.score,
       title: card.title,

@@ -2,21 +2,20 @@
   import Button from "@/components/ui/Button.vue";
   import EditableCard from "@/components/ui/EditableCard.vue";
   import { useDeckStore } from "@/stores/deck-store";
-  import type { Card } from "@/types/card";
-  import { useAppStore } from "@stores/app-store";
-  import { reactive, ref } from "vue";
+  import { useUserStore } from "@/stores/user-store";
+  import type { CardResponse } from "@/services/api";
+  import { reactive } from "vue";
 
   const { cardId } = defineProps<{ cardId: string }>();
 
   const { getCard, updateCard } = useDeckStore();
-  const { appStore } = useAppStore();
-  const username = ref(appStore.username);
+  const { username } = useUserStore();
 
   const cardData = getCard(cardId);
 
-  const card = reactive<Card>(
+  const card = reactive<Omit<CardResponse, "createdAt" | "updatedAt">>(
     cardData
-      ? { ...cardData, author: username.value }
+      ? { ...cardData }
       : {
           title: "",
           description: "",
@@ -27,9 +26,9 @@
   );
 
   const emit = defineEmits<{ (e: "save"): void }>();
-  const saveCard = () => {
+  const saveCard = async () => {
     if (!cardId) return;
-    updateCard(cardId, {
+    await updateCard(cardId, {
       description: card.description,
       score: card.score,
       title: card.title,
@@ -40,7 +39,7 @@
 <template>
   <div class="flex flex-col items-center gap-4 mt-4">
     <EditableCard
-      :author="username"
+      :author="card.author"
       :is-editing-card="true"
       v-model:score="card.score"
       v-model:description="card.description"

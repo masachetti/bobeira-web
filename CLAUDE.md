@@ -17,6 +17,7 @@ Bobeira-Web is a collaborative card game application where users create custom c
 - Vue3
 - Typescript
 - Tailwindcss
+- Axios
 
 ## Commands
 
@@ -58,6 +59,12 @@ export const useStore = () => ({ state, actions... });
 ### Authentication Flow
 
 Keycloak initializes before app mount in `main.ts`. Login required to render app. Token auto-refreshes every 60 seconds. Use `useAuth()` composable for auth state and actions.
+
+## CORS Configuration
+
+- Backend uses `cors` middleware to allow cross-origin requests
+- Allowed origins: `http://localhost:5173` (dev) and `https://sachetti.dev.br` (prod)
+- Credentials enabled for authenticated requests
 
 ### Path Aliases
 

@@ -6,13 +6,15 @@
   import { useDeckStore } from "@/stores/deck-store";
   import Card from "@components/ui/Card.vue";
   import { onLongPress } from "@vueuse/core";
-  import { ref, useTemplateRef } from "vue";
+  import { onMounted, ref, useTemplateRef } from "vue";
   import ArrowLeftIcon from "@assets/arrow-left.svg";
-  import { useUserStore } from "@/stores/user-store";
 
   const { goTo } = useAppStore();
-  const { username } = useUserStore();
-  const { deckStore, deleteCard } = useDeckStore();
+  const { cards, loading, fetchCards, deleteCards } = useDeckStore();
+
+  onMounted(() => {
+    fetchCards();
+  });
 
   const htmlRefHook = useTemplateRef("htmlRefHook");
   const onLongPressCallbackHook = () => {
@@ -20,8 +22,8 @@
   };
   const isMultSelectionEnabled = ref(false);
   const multSelectionSelectedCards = ref<Array<string>>([]);
-  const deleteCardFromMultSelection = () => {
-    multSelectionSelectedCards.value.forEach(deleteCard);
+  const deleteCardFromMultSelection = async () => {
+    await deleteCards(multSelectionSelectedCards.value);
     isMultSelectionEnabled.value = false;
     multSelectionSelectedCards.value.splice(
       0,
@@ -87,15 +89,22 @@
       </Button>
     </div>
     <div
+      v-if="loading"
+      class="flex items-center justify-center h-full"
+    >
+      <span class="text-gray-500">Carregando cartas...</span>
+    </div>
+    <div
+      v-else
       class="grid sm:grid-cols-2 lg:grid-cols-3 items-center gap-x-8 gap-y-6 overflow-y-scroll h-full px-6 py-2"
     >
-      <div class="relative h-fit" v-for="card in deckStore">
+      <div class="relative h-fit" v-for="card in cards" :key="card.id">
         <Card
           ref="htmlRefHook"
           class="cursor-pointer"
           :title="card.title"
           :description="card.description"
-          :author="username"
+          :author="card.author"
           :score="card.score"
           @click="handleCardClick(card.id)"
         />
