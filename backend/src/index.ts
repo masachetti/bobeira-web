@@ -9,11 +9,10 @@ import { createCardRoutes } from "./routes/card-routes.js";
 const app = express();
 
 // Setup Prisma with libSQL adapter for SQLite
-const libsql = createClient({
-  url: "file:./dev.db",
-});
+const dbUrl = process.env.DATABASE_URL || "file:./dev.db";
+
 // @ts-ignore
-const adapter = new PrismaLibSql({ url: "file:./dev.db" });
+const adapter = new PrismaLibSql({ url: dbUrl });
 const prisma = new PrismaClient({ adapter });
 const PORT = process.env.PORT || 3000;
 
@@ -22,7 +21,7 @@ app.use(
   cors({
     origin: ["http://localhost:5173", "https://sachetti.dev.br"],
     credentials: true,
-  }),
+  })
 );
 app.use(express.json());
 app.use(sessionMiddleware);
